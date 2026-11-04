@@ -7,7 +7,7 @@
 **A pause before the scroll.**
 Open Threshold instead of Instagram, name what's pulling you in, try something tiny, and grow a pixel garden each time you choose something else.
 
-[**Try the live demo →**](https://Vratzz.github.io/threshold/) &nbsp;·&nbsp; [Case study](#case-study) &nbsp;·&nbsp; [Run it locally](#run-it-locally)
+[**Try the live demo →**](https://Vratzz.github.io/Threshold/) &nbsp;·&nbsp; [Case study](#case-study) &nbsp;·&nbsp; [Run it locally](#run-it-locally)
 
 <img src="docs/screenshots/hero.png" alt="Five Threshold screens: the door with two pixel bunnies and reason chips, a breathing pause, a fact and a reaction game, a tulip blooming, and a garden of pixel flowers" />
 
@@ -86,7 +86,7 @@ The same constraint applies to reminders. A web page can't wake itself on iOS, s
 No build step and no dependencies: it's plain HTML, CSS and JavaScript.
 
 ```bash
-git clone https://github.com/Vratzz/threshold.git
+git clone https://github.com/Vratzz/Threshold.git
 cd threshold
 python3 -m http.server 8000   # or: npx serve
 ```
