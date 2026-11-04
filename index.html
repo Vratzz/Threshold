@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Threshold — pause before you scroll</title>
+  <meta name="description" content="A tiny habit-interruption app. Open Threshold instead of Instagram, name why you're reaching for it, and grow a pixel garden every time you choose something else." />
+  <meta name="theme-color" content="#2D1B33" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Threshold" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <main class="app" id="app">
+
+    <!-- Top bar (hidden during onboarding) -->
+    <header class="topbar" id="topbar" hidden>
+      <button class="icon-btn" data-go="door" aria-label="Home">
+        <span aria-hidden="true">⌂</span>
+      </button>
+      <span class="wordmark">Threshold</span>
+      <div class="topbar-right">
+        <button class="icon-btn" data-go="garden" aria-label="Your garden">
+          <span aria-hidden="true">✿</span>
+        </button>
+        <button class="icon-btn" data-go="settings" aria-label="Settings">
+          <span aria-hidden="true">⚙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 0. Onboarding -->
+    <section class="screen" id="screen-onboarding" hidden>
+      <div class="bunnies bunnies--small" data-bunnies></div>
+      <h1 class="display">Hi. I'm the pause<br />before the scroll.</h1>
+      <form id="onboarding-form" class="stack">
+        <label class="field">
+          <span class="field-label">What should I call you?</span>
+          <input type="text" name="name" maxlength="24" autocomplete="given-name" placeholder="Your name" required />
+        </label>
+        <fieldset class="field">
+          <legend class="field-label">What are you trying to pause?</legend>
+          <div class="segmented" role="radiogroup">
+            <label><input type="radio" name="target" value="instagram" checked /><span>Instagram</span></label>
+            <label><input type="radio" name="target" value="series" /><span>A series</span></label>
+          </div>
+        </fieldset>
+        <button class="btn btn--primary" type="submit">Let's begin</button>
+      </form>
+      <p class="fine-print">Everything stays on this device. No accounts, no tracking.</p>
+    </section>
+
+    <!-- 1. The door: bunnies + reason picker -->
+    <section class="screen" id="screen-door" hidden>
+      <div class="bunnies" data-bunnies></div>
+      <h1 class="display" id="door-title">You're at the door</h1>
+      <p class="lede" id="door-sub">What's pulling you in right now?</p>
+      <div class="chips" id="reason-chips" role="group" aria-label="Reasons"></div>
+      <button class="btn btn--primary" id="btn-wait" disabled>Wait a moment</button>
+    </section>
+
+    <!-- 2. Breathing pause -->
+    <section class="screen screen--center" id="screen-breathe" hidden>
+      <div class="breath" aria-hidden="true"><div class="breath-circle"></div></div>
+      <p class="breath-label" id="breath-label" aria-live="polite">Breathe in…</p>
+      <button class="btn btn--ghost" id="btn-skip-breath">Skip</button>
+    </section>
+
+    <!-- 3. Fact + mini activity -->
+    <section class="screen" id="screen-moment" hidden>
+      <p class="eyebrow" id="moment-reason"></p>
+      <article class="card fact-card">
+        <p class="eyebrow eyebrow--amber">Did you know</p>
+        <p class="fact" id="fact-text"></p>
+        <button class="link-btn" id="btn-another-fact">Another fact</button>
+      </article>
+      <article class="card activity-card" id="activity"></article>
+      <div class="stack stack--tight">
+        <button class="btn btn--primary" id="btn-instead">I'll do this instead</button>
+        <button class="btn btn--ghost" id="btn-open-anyway"></button>
+      </div>
+    </section>
+
+    <!-- 4. Outcome -->
+    <section class="screen screen--center" id="screen-outcome" hidden>
+      <div class="outcome-art" id="outcome-art"></div>
+      <h1 class="display" id="outcome-title"></h1>
+      <p class="lede" id="outcome-body"></p>
+      <div class="stack stack--tight">
+        <a class="btn btn--primary" id="outcome-primary" href="#"></a>
+        <button class="btn btn--ghost" data-go="garden">See my garden</button>
+      </div>
+    </section>
+
+    <!-- 5. Garden -->
+    <section class="screen" id="screen-garden" hidden>
+      <h1 class="display">Your garden</h1>
+      <div class="stats" id="garden-stats"></div>
+      <div class="garden" id="garden" aria-label="Pixel flower garden"></div>
+      <p class="fine-print" id="garden-empty" hidden>Nothing planted yet. Every time you choose something else, a flower grows here.</p>
+    </section>
+
+    <!-- 6. Settings -->
+    <section class="screen" id="screen-settings" hidden>
+      <h1 class="display">Settings</h1>
+      <form id="settings-form" class="stack">
+        <label class="field">
+          <span class="field-label">Name</span>
+          <input type="text" name="name" maxlength="24" />
+        </label>
+        <fieldset class="field">
+          <legend class="field-label">Pausing</legend>
+          <div class="segmented" role="radiogroup">
+            <label><input type="radio" name="target" value="instagram" /><span>Instagram</span></label>
+            <label><input type="radio" name="target" value="series" /><span>A series</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field card">
+          <legend class="field-label">Check-in reminders</legend>
+          <label class="switch">
+            <input type="checkbox" name="remindersOn" />
+            <span>Gentle nudges at the times you usually slip</span>
+          </label>
+          <div id="reminder-list" class="stack stack--tight"></div>
+          <button type="button" class="link-btn" id="btn-add-reminder">+ Add a reminder</button>
+          <p class="fine-print">Web apps can only notify while Threshold is open or recently used, so reminders are best-effort. The native iOS version uses the system scheduler instead.</p>
+        </fieldset>
+
+        <button class="btn btn--primary" type="submit">Save</button>
+      </form>
+      <button class="btn btn--danger" id="btn-reset">Reset everything</button>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </main>
+
+  <script src="src/pixels.js"></script>
+  <script src="src/content.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
