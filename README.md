@@ -140,4 +140,4 @@ Ideas, new activities and better facts are welcome. See [CONTRIBUTING.md](CONTRI
 
 ---
 
-<sub>Designed and built by **Vartika Verma**, product designer. Built with AI-assisted coding (Claude), with every design decision mine.</sub>
+<sub>Designed and built by **Vartika Verma**, product designer.</sub>
