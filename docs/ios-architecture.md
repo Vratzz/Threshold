@@ -22,7 +22,7 @@ All four targets share one App Group (`group.<bundle-id>.threshold`) so they can
       │
       ▼
  ┌──────────────────────────┐
- │  Shield (plum background) │   ShieldConfigurationExtension
+ │  Shield (charcoal + blue) │   ShieldConfigurationExtension
  │  "Wait a second"          │
  │  [Let's pause first]      │──► ShieldActionExtension
  │  [Not now]                │      schedules a local notification
@@ -70,9 +70,9 @@ override func intervalDidEnd(for activity: DeviceActivityName) {
 ## Design-token mapping
 | Web | SwiftUI |
 |---|---|
-| `--plum #2D1B33` | `Color("Plum")` |
-| `--amber #E8A854` | `Color("Amber")` |
-| Fraunces / Karla | `.serif` system design / SF Pro (until the custom fonts are bundled) |
+| `--base #141416` | `Color("Base")` |
+| `--blue #0099FF` | `Color("Accent")` |
+| Inter | SF Pro (system font) until Inter is bundled |
 
 ## Setup checklist (Xcode)
 1. New iOS App → `Threshold`

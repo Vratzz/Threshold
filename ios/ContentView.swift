@@ -11,7 +11,7 @@ struct ContentView: View {
     var body: some View {
         ThresholdWebView()
             .ignoresSafeArea() // the web app handles the notch itself (env(safe-area-inset-*))
-            .background(Color(red: 0x2B / 255, green: 0x1A / 255, blue: 0x31 / 255))
+            .background(Color(red: 0x14 / 255, green: 0x14 / 255, blue: 0x16 / 255))
             .preferredColorScheme(.dark)
     }
 }
@@ -27,7 +27,7 @@ struct ThresholdWebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.isOpaque = false
-        webView.backgroundColor = UIColor(red: 0x2B / 255, green: 0x1A / 255, blue: 0x31 / 255, alpha: 1)
+        webView.backgroundColor = UIColor(red: 0x14 / 255, green: 0x14 / 255, blue: 0x16 / 255, alpha: 1)
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = false
 

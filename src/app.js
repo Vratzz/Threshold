@@ -233,7 +233,7 @@
     reaction(el) {
       el.innerHTML = `
         <p class="eyebrow">Quick game · 10 seconds</p>
-        <h2 class="activity-title">Tap the moment it turns amber</h2>
+        <h2 class="activity-title">Tap the moment it turns blue</h2>
         <button class="reaction-pad" data-state="idle" aria-live="polite">Tap to start</button>`;
       const pad = $('.reaction-pad', el);
       let t0 = 0;
