@@ -1,6 +1,6 @@
 // Threshold service worker: caches the app shell so it opens instantly and works offline.
 // Bump CACHE when you change any shell file so returning users get the update.
-const CACHE = 'threshold-v1';
+const CACHE = 'threshold-v2';
 const SHELL = [
   './',
   'index.html',

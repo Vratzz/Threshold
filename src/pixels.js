@@ -86,6 +86,115 @@
     },
   };
 
+  // Rewards beyond the garden. Each set holds a few sprites that rotate as you collect.
+  const GEM = [
+    '..aaaaa..',
+    '.aAAaaaa.',
+    'aAAaaaaad',
+    'ddddddddd',
+    '.daAaaad.',
+    '..daAad..',
+    '...dad...',
+    '....d....',
+  ];
+
+  const SKY = {
+    star: {
+      grid: [
+        '....y....',
+        '...yyy...',
+        '...yYy...',
+        'yyyyYyyyy',
+        '.yyYWYyy.',
+        '..yyYyy..',
+        '..yy.yy..',
+        '.yy...yy.',
+        '.y.....y.',
+      ],
+      palette: { y: '#E8A854', Y: '#F6D49A', W: '#FFF6E6' },
+    },
+    moon: {
+      grid: [
+        '...mmmm..',
+        '..mmM....',
+        '.mmM.....',
+        '.mmM.....',
+        '.mmM.....',
+        '.mmmM....',
+        '..mmmmmm.',
+        '...mmmm..',
+      ],
+      palette: { m: '#F5EDE4', M: '#CBBFB6' },
+    },
+    sparkle: {
+      grid: [
+        '....s....',
+        '....s....',
+        '...sSs...',
+        'ssSSWSSss',
+        '...sSs...',
+        '....s....',
+        '....s....',
+      ],
+      palette: { s: '#B79CD1', S: '#E2D3EF', W: '#FFFFFF' },
+    },
+  };
+
+  const GEMS = {
+    amethyst: { grid: GEM, palette: { a: '#B79CD1', A: '#E8DDF3', d: '#8A6FA8' } },
+    emerald: { grid: GEM, palette: { a: '#8FC1A3', A: '#D3EDDD', d: '#5E8C72' } },
+    topaz: { grid: GEM, palette: { a: '#E8A854', A: '#F8DDB0', d: '#B97F35' } },
+  };
+
+  const SNACKS = {
+    carrot: {
+      grid: [
+        '..l.l.l..',
+        '...lll...',
+        '....l....',
+        '..ooooo..',
+        '..oOooo..',
+        '..ooooo..',
+        '...ooo...',
+        '...oOo...',
+        '...ooo...',
+        '....o....',
+      ],
+      palette: { l: '#8A9A7E', o: '#E8904A', O: '#F6C08E' },
+    },
+    strawberry: {
+      grid: [
+        '...lll...',
+        '..lllll..',
+        '.rrrlrrr.',
+        '.rrwrrwr.',
+        '.rrrrrrr.',
+        '..rwrrr..',
+        '..rrrwr..',
+        '...rrr...',
+        '....r....',
+      ],
+      palette: { l: '#8A9A7E', r: '#D9656F', w: '#F6D49A' },
+    },
+    clover: {
+      grid: [
+        '..cc.cc..',
+        '.cCcccCc.',
+        '.ccc.ccc.',
+        '..ccgcc..',
+        '.ccc.ccc.',
+        '.cCcccCc.',
+        '..cc.cc..',
+        '....g....',
+        '.....g...',
+        '......g..',
+      ],
+      palette: { c: '#8FC1A3', C: '#CDEBD9', g: '#5E6B54' },
+    },
+  };
+
+  const REWARD_SPRITES = { garden: FLOWERS, sky: SKY, gems: GEMS, snacks: SNACKS };
+
   /** Turn a character grid into an SVG string. */
   function toSVG(grid, palette, { className = '', label = '' } = {}) {
     const h = grid.length;
@@ -110,5 +219,13 @@
     return toSVG(f.grid, f.palette, opts);
   }
 
-  window.Pixels = { bunny, flower, FLOWER_KINDS: Object.keys(FLOWERS), BUNNY, BUNNY_PALETTES, FLOWERS };
+  /** Render one reward sprite, e.g. reward('sky', 'moon'). */
+  function reward(set, kind, opts) {
+    const s = (REWARD_SPRITES[set] || FLOWERS)[kind];
+    return s ? toSVG(s.grid, s.palette, opts) : '';
+  }
+
+  const rewardKinds = (set) => Object.keys(REWARD_SPRITES[set] || FLOWERS);
+
+  window.Pixels = { bunny, flower, reward, rewardKinds, FLOWER_KINDS: Object.keys(FLOWERS), BUNNY, BUNNY_PALETTES, FLOWERS, REWARD_SPRITES };
 })();

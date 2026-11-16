@@ -59,6 +59,46 @@ window.ThresholdContent = {
     },
   ],
 
+  // What you collect each time you choose something else. Picked in onboarding and Settings.
+  rewards: {
+    garden: {
+      name: 'Flower garden',
+      blurb: 'A flower blooms',
+      collection: 'Your garden',
+      noun: 'flowers',
+      empty: 'Nothing planted yet. Every time you choose something else, a flower grows here.',
+      first: 'Your first flower. The garden starts here.',
+      line: (kind) => `A ${kind} just bloomed`,
+    },
+    sky: {
+      name: 'Night sky',
+      blurb: 'A star lights up',
+      collection: 'Your night sky',
+      noun: 'lights',
+      empty: 'The sky is dark for now. Each time you choose something else, a new light appears.',
+      first: 'Your first light. The sky starts here.',
+      line: (kind) => ({ star: 'A star just lit up', moon: 'A moon just rose', sparkle: 'A sparkle just appeared' }[kind]),
+    },
+    gems: {
+      name: 'Gem jar',
+      blurb: 'A gem drops in',
+      collection: 'Your gem jar',
+      noun: 'gems',
+      empty: 'The jar is empty for now. Each time you choose something else, a gem drops in.',
+      first: 'Your first gem. The jar starts here.',
+      line: (kind) => `You found ${kind === 'amethyst' || kind === 'emerald' ? 'an' : 'a'} ${kind}`,
+    },
+    snacks: {
+      name: 'Bunny snacks',
+      blurb: 'The bunnies get a treat',
+      collection: 'The bunnies’ pantry',
+      noun: 'treats',
+      empty: 'The pantry is empty. Each time you choose something else, the bunnies get a treat.',
+      first: 'Their first treat. The bunnies say thank you.',
+      line: (kind) => `The bunnies got a ${kind}`,
+    },
+  },
+
   targets: {
     instagram: { label: 'Instagram', openUrl: 'https://www.instagram.com/', verb: 'open Instagram' },
     series: { label: 'your series', openUrl: null, verb: 'start the next episode' },

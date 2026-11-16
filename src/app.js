@@ -2,13 +2,13 @@
  * Threshold — app logic.
  *
  * Flow: onboarding → door (pick a reason) → breathe → moment (fact + activity)
- *       → outcome (a flower grows, or a no-shame exit) → garden.
+ *       → outcome (you earn your chosen reward, or a no-shame exit) → collection.
  *
  * All state lives in localStorage under one key. No network calls, no analytics.
  */
 (function () {
-  const { reasons, targets } = window.ThresholdContent;
-  const { bunny, flower, FLOWER_KINDS } = window.Pixels;
+  const { reasons, targets, rewards } = window.ThresholdContent;
+  const { bunny, reward, rewardKinds } = window.Pixels;
 
   const STORAGE_KEY = 'threshold:v1';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -17,8 +17,9 @@
   const defaultState = () => ({
     name: '',
     target: 'instagram',
+    reward: 'garden', // garden | sky | gems | snacks
     onboarded: false,
-    log: [], // { t: timestamp, reason, outcome: 'instead' | 'opened', flower?, pausedMs }
+    log: [], // { t, reason, outcome: 'instead' | 'opened', reward?: { set, kind }, pausedMs }
     reminders: {
       on: false,
       items: [
@@ -54,6 +55,10 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const target = () => targets[state.target] || targets.instagram;
   const reasonById = (id) => reasons.find((r) => r.id === id);
+  const rewardSet = () => rewards[state.reward] || rewards.garden;
+  // Older logs stored a bare `flower`; treat those as garden rewards.
+  const rewardOf = (l) => l.reward || (l.flower ? { set: 'garden', kind: l.flower } : null);
+  const earned = () => state.log.map(rewardOf).filter(Boolean);
   const escapeHTML = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function toast(msg) {
@@ -80,11 +85,14 @@
     }
     $$('.screen').forEach((s) => (s.hidden = s.id !== `screen-${name}`));
     $('#topbar').hidden = name === 'onboarding';
+    $$('#topbar [data-go]').forEach((b) =>
+      b.dataset.go === name ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')
+    );
     const screen = $(`#screen-${name}`);
     screen.classList.remove('enter');
     void screen.offsetWidth; // restart entrance animation
     screen.classList.add('enter');
-    const renderers = { door: renderDoor, garden: renderGarden, settings: renderSettings };
+    const renderers = { onboarding: renderOnboarding, door: renderDoor, garden: renderGarden, settings: renderSettings };
     if (renderers[name]) renderers[name]();
     window.scrollTo(0, 0);
     const heading = $('h1, .breath-label', screen);
@@ -99,12 +107,36 @@
     if (btn) go(btn.dataset.go);
   });
 
+  // ---------- Reward picker (onboarding + settings) ----------
+  function renderRewardPicker(el, selected) {
+    el.setAttribute('role', 'radiogroup');
+    el.innerHTML = Object.entries(rewards)
+      .map(([id, r]) => `
+        <label class="reward-tile">
+          <input type="radio" name="reward" value="${id}" ${id === selected ? 'checked' : ''} />
+          <span class="reward-tile-inner">
+            <span class="reward-check" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
+            <span class="reward-preview reward-preview--${id}" aria-hidden="true">
+              ${rewardKinds(id).map((k) => reward(id, k)).join('')}
+            </span>
+            <span class="reward-name">${r.name}</span>
+            <span class="reward-blurb">${r.blurb}</span>
+          </span>
+        </label>`)
+      .join('');
+  }
+
   // ---------- Onboarding ----------
+  function renderOnboarding() {
+    renderRewardPicker($('#screen-onboarding [data-reward-picker]'), state.reward);
+  }
+
   $('#onboarding-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
     state.name = (data.get('name') || '').trim();
     state.target = data.get('target');
+    state.reward = data.get('reward') || 'garden';
     state.onboarded = true;
     save();
     go('door');
@@ -306,7 +338,10 @@
       pausedMs: Date.now() - (session.startedAt || Date.now()),
     };
     if (outcome === 'instead') {
-      entry.flower = FLOWER_KINDS[state.log.filter((l) => l.flower).length % FLOWER_KINDS.length];
+      const set = state.reward in rewards ? state.reward : 'garden';
+      const kinds = rewardKinds(set);
+      const already = earned().filter((r) => r.set === set).length;
+      entry.reward = { set, kind: kinds[already % kinds.length] };
     }
     state.log.push(entry);
     save();
@@ -316,11 +351,17 @@
   $('#btn-instead').addEventListener('click', () => {
     const entry = record('instead');
     go('outcome');
-    $('#outcome-art').innerHTML = `<div class="grow">${flower(entry.flower, { label: `A new ${entry.flower}` })}</div>`;
-    $('#outcome-title').textContent = `A ${entry.flower} just bloomed`;
-    const count = state.log.filter((l) => l.outcome === 'instead').length;
+    const { set, kind } = entry.reward;
+    const r = rewards[set];
+    $('#outcome-art').innerHTML = `
+      <div class="reward-stage reward-stage--${set}">
+        <div class="grow reward-art--${set}">${reward(set, kind, { label: `A new ${kind}` })}</div>
+      </div>`;
+    $('#outcome-title').textContent = r.line(kind);
+    const count = earned().filter((x) => x.set === set).length;
     $('#outcome-body').textContent =
-      count === 1 ? 'Your first flower. The garden starts here.' : `That's ${count} flowers in your garden. Each one is a moment you chose something else.`;
+      count === 1 ? r.first : `That's ${count} ${r.noun} in ${r.collection.replace(/^Your /, 'your ').replace(/^The /, 'the ')}. Each one is a moment you chose something else.`;
+    $('#outcome-secondary').textContent = `See ${r.collection.replace(/^Your /, 'my ').replace(/^The /, 'the ')}`;
     const primary = $('#outcome-primary');
     primary.textContent = 'Back to the door';
     primary.href = '#';
@@ -334,7 +375,8 @@
     const entry = record('opened');
     go('outcome');
     const secs = Math.max(1, Math.round(entry.pausedMs / 1000));
-    $('#outcome-art').innerHTML = `<div class="bunnies bunnies--small">${$('[data-bunnies]').innerHTML}</div>`;
+    $('#outcome-art').innerHTML = `<div class="hero-well hero-well--round"><div class="bunnies bunnies--small">${$('[data-bunnies]').innerHTML}</div></div>`;
+    $('#outcome-secondary').textContent = 'See my collection';
     $('#outcome-title').textContent = 'That’s okay';
     $('#outcome-body').textContent = `You paused for ${secs} seconds and decided on purpose. That still counts. Go enjoy it.`;
     const primary = $('#outcome-primary');
@@ -376,16 +418,35 @@
   }
 
   function renderGarden() {
-    const flowers = state.log.filter((l) => l.flower);
+    const all = earned();
+    const current = rewardSet();
+    $('#collection-title').textContent = current.collection;
     $('#garden-stats').innerHTML = `
-      <div class="stat"><span class="stat-num">${flowers.length}</span><span class="stat-label">flowers</span></div>
+      <div class="stat"><span class="stat-num">${all.length}</span><span class="stat-label">collected</span></div>
       <div class="stat"><span class="stat-num">${state.log.length}</span><span class="stat-label">pauses</span></div>
       <div class="stat"><span class="stat-num">${streakDays()}</span><span class="stat-label">day streak</span></div>
       <div class="stat stat--wide"><span class="stat-label">Most common pull</span><span class="stat-word">${topReason() || '—'}</span></div>`;
-    $('#garden').innerHTML = flowers
-      .map((l) => `<div class="plot" title="${new Date(l.t).toLocaleDateString()}">${flower(l.flower)}</div>`)
+
+    // One themed bed per reward you've earned, with your current choice first.
+    const dates = state.log.filter(rewardOf).map((l) => new Date(l.t).toLocaleDateString());
+    const order = [state.reward, ...Object.keys(rewards).filter((k) => k !== state.reward)];
+    $('#collections').innerHTML = order
+      .map((set) => {
+        const items = all.map((r, i) => ({ ...r, date: dates[i] })).filter((r) => r.set === set);
+        if (!items.length) return '';
+        const showHeading = set !== state.reward || all.some((r) => r.set !== state.reward);
+        return `
+          <section class="bed-wrap">
+            ${showHeading ? `<h2 class="bed-title">${rewards[set].name} <span>${items.length}</span></h2>` : ''}
+            <div class="bed bed--${set}" aria-label="${rewards[set].name}">
+              ${items.map((r) => `<div class="plot" title="${r.date}">${reward(set, r.kind)}</div>`).join('')}
+            </div>
+          </section>`;
+      })
       .join('');
-    $('#garden-empty').hidden = flowers.length > 0;
+    const empty = !all.some((r) => r.set === state.reward);
+    $('#garden-empty').textContent = current.empty;
+    $('#garden-empty').hidden = !empty;
   }
 
   // ---------- Settings + reminders ----------
@@ -397,6 +458,7 @@
     f.name.value = state.name;
     $$('input[name="target"]', f).forEach((r) => (r.checked = r.value === state.target));
     f.remindersOn.checked = state.reminders.on;
+    renderRewardPicker($('[data-reward-picker]', f), state.reward);
     renderReminderList();
   }
 
@@ -411,7 +473,7 @@
               (d, di) => `<button type="button" class="day" aria-pressed="${r.days.includes(di)}" data-day="${di}" aria-label="${DAY_NAMES[di]}">${d}</button>`
             ).join('')}
           </div>
-          <button type="button" class="icon-btn icon-btn--small" data-remove aria-label="Remove reminder">×</button>
+          <button type="button" class="icon-btn icon-btn--small" data-remove aria-label="Remove reminder"><svg><use href="#i-close"/></svg></button>
         </div>`
       )
       .join('');
@@ -425,7 +487,7 @@
       const d = Number(e.target.dataset.day);
       item.days = item.days.includes(d) ? item.days.filter((x) => x !== d) : [...item.days, d].sort();
       e.target.setAttribute('aria-pressed', String(item.days.includes(d)));
-    } else if (e.target.matches('[data-remove]')) {
+    } else if (e.target.closest('[data-remove]')) {
       state.reminders.items.splice(Number(row.dataset.i), 1);
       renderReminderList();
     }
@@ -446,6 +508,7 @@
     const f = e.target;
     state.name = f.name.value.trim();
     state.target = $('input[name="target"]:checked', f).value;
+    state.reward = $('input[name="reward"]:checked', f)?.value || state.reward;
     state.reminders.on = f.remindersOn.checked;
     if (state.reminders.on && 'Notification' in window && Notification.permission === 'default') {
       try {
@@ -464,7 +527,7 @@
   $('#btn-reset').addEventListener('click', (e) => {
     const btn = e.currentTarget;
     if (!resetArmed) {
-      btn.textContent = 'Tap again to erase your garden';
+      btn.textContent = 'Tap again to erase everything';
       resetArmed = setTimeout(() => {
         btn.textContent = 'Reset everything';
         resetArmed = null;

@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Threshold — pause before you scroll</title>
-  <meta name="description" content="A tiny habit-interruption app. Open Threshold instead of Instagram, name why you're reaching for it, and grow a pixel garden every time you choose something else." />
-  <meta name="theme-color" content="#2D1B33" />
+  <meta name="description" content="A tiny habit-interruption app. Open Threshold instead of Instagram, name why you're reaching for it, and collect a small reward every time you choose something else." />
+  <meta name="theme-color" content="#2B1A31" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Threshold" />
@@ -18,28 +18,36 @@
   <link rel="stylesheet" href="src/styles.css" />
 </head>
 <body>
+  <!-- Icon sprite: referenced with <use href="#i-…"> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-collection" viewBox="0 0 24 24"><path d="M12 20v-7m0 0c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Zm0 0c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6ZM7 20h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9m4 0h3M4 17h3m4 0h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
   <main class="app" id="app">
 
     <!-- Top bar (hidden during onboarding) -->
     <header class="topbar" id="topbar" hidden>
-      <button class="icon-btn" data-go="door" aria-label="Home">
-        <span aria-hidden="true">⌂</span>
-      </button>
+      <button class="icon-btn" data-go="door" aria-label="Home"><svg><use href="#i-home"/></svg></button>
       <span class="wordmark">Threshold</span>
       <div class="topbar-right">
-        <button class="icon-btn" data-go="garden" aria-label="Your garden">
-          <span aria-hidden="true">✿</span>
-        </button>
-        <button class="icon-btn" data-go="settings" aria-label="Settings">
-          <span aria-hidden="true">⚙</span>
-        </button>
+        <button class="icon-btn" data-go="garden" aria-label="Your collection"><svg><use href="#i-collection"/></svg></button>
+        <button class="icon-btn" data-go="settings" aria-label="Settings"><svg><use href="#i-settings"/></svg></button>
       </div>
     </header>
 
     <!-- 0. Onboarding -->
     <section class="screen" id="screen-onboarding" hidden>
-      <div class="bunnies bunnies--small" data-bunnies></div>
-      <h1 class="display">Hi. I'm the pause<br />before the scroll.</h1>
+      <div class="hero-well">
+        <div class="bunnies bunnies--small" data-bunnies></div>
+      </div>
+      <div class="heading-group">
+        <p class="eyebrow">Welcome</p>
+        <h1 class="display">Hi. I'm the pause<br />before the scroll.</h1>
+      </div>
       <form id="onboarding-form" class="stack">
         <label class="field">
           <span class="field-label">What should I call you?</span>
@@ -52,34 +60,45 @@
             <label><input type="radio" name="target" value="series" /><span>A series</span></label>
           </div>
         </fieldset>
+        <fieldset class="field">
+          <legend class="field-label">What would you like to collect?</legend>
+          <p class="field-hint">Each time you choose something else, you earn one.</p>
+          <div class="reward-picker" data-reward-picker></div>
+        </fieldset>
         <button class="btn btn--primary" type="submit">Let's begin</button>
       </form>
-      <p class="fine-print">Everything stays on this device. No accounts, no tracking.</p>
+      <p class="fine-print fine-print--center">Everything stays on this device. No accounts, no tracking.</p>
     </section>
 
     <!-- 1. The door: bunnies + reason picker -->
     <section class="screen" id="screen-door" hidden>
-      <div class="bunnies" data-bunnies></div>
-      <h1 class="display" id="door-title">You're at the door</h1>
-      <p class="lede" id="door-sub">What's pulling you in right now?</p>
+      <div class="hero-well">
+        <div class="bunnies" data-bunnies></div>
+      </div>
+      <div class="heading-group">
+        <h1 class="display" id="door-title">You're at the door</h1>
+        <p class="lede" id="door-sub">What's pulling you in right now?</p>
+      </div>
       <div class="chips" id="reason-chips" role="group" aria-label="Reasons"></div>
       <button class="btn btn--primary" id="btn-wait" disabled>Wait a moment</button>
     </section>
 
     <!-- 2. Breathing pause -->
     <section class="screen screen--center" id="screen-breathe" hidden>
-      <div class="breath" aria-hidden="true"><div class="breath-circle"></div></div>
+      <div class="breath" aria-hidden="true">
+        <div class="breath-well"><div class="breath-circle"></div></div>
+      </div>
       <p class="breath-label" id="breath-label" aria-live="polite">Breathe in…</p>
-      <button class="btn btn--ghost" id="btn-skip-breath">Skip</button>
+      <button class="btn btn--ghost btn--compact" id="btn-skip-breath">Skip</button>
     </section>
 
     <!-- 3. Fact + mini activity -->
     <section class="screen" id="screen-moment" hidden>
-      <p class="eyebrow" id="moment-reason"></p>
+      <p class="pill" id="moment-reason"></p>
       <article class="card fact-card">
         <p class="eyebrow eyebrow--amber">Did you know</p>
         <p class="fact" id="fact-text"></p>
-        <button class="link-btn" id="btn-another-fact">Another fact</button>
+        <button class="link-btn" id="btn-another-fact">Another fact →</button>
       </article>
       <article class="card activity-card" id="activity"></article>
       <div class="stack stack--tight">
@@ -95,38 +114,47 @@
       <p class="lede" id="outcome-body"></p>
       <div class="stack stack--tight">
         <a class="btn btn--primary" id="outcome-primary" href="#"></a>
-        <button class="btn btn--ghost" data-go="garden">See my garden</button>
+        <button class="btn btn--ghost" data-go="garden" id="outcome-secondary">See my collection</button>
       </div>
     </section>
 
-    <!-- 5. Garden -->
+    <!-- 5. Collection (garden, sky, gem jar or pantry) -->
     <section class="screen" id="screen-garden" hidden>
-      <h1 class="display">Your garden</h1>
+      <h1 class="display" id="collection-title">Your garden</h1>
       <div class="stats" id="garden-stats"></div>
-      <div class="garden" id="garden" aria-label="Pixel flower garden"></div>
-      <p class="fine-print" id="garden-empty" hidden>Nothing planted yet. Every time you choose something else, a flower grows here.</p>
+      <div id="collections" class="stack"></div>
+      <p class="fine-print" id="garden-empty" hidden></p>
     </section>
 
     <!-- 6. Settings -->
     <section class="screen" id="screen-settings" hidden>
       <h1 class="display">Settings</h1>
       <form id="settings-form" class="stack">
-        <label class="field">
-          <span class="field-label">Name</span>
-          <input type="text" name="name" maxlength="24" />
-        </label>
-        <fieldset class="field">
-          <legend class="field-label">Pausing</legend>
-          <div class="segmented" role="radiogroup">
-            <label><input type="radio" name="target" value="instagram" /><span>Instagram</span></label>
-            <label><input type="radio" name="target" value="series" /><span>A series</span></label>
-          </div>
+        <div class="card stack">
+          <label class="field">
+            <span class="field-label">Name</span>
+            <input type="text" name="name" maxlength="24" />
+          </label>
+          <fieldset class="field">
+            <legend class="field-label">Pausing</legend>
+            <div class="segmented" role="radiogroup">
+              <label><input type="radio" name="target" value="instagram" /><span>Instagram</span></label>
+              <label><input type="radio" name="target" value="series" /><span>A series</span></label>
+            </div>
+          </fieldset>
+        </div>
+
+        <fieldset class="field card">
+          <legend class="field-label">Reward</legend>
+          <p class="field-hint">What you collect when you choose something else. Switching keeps everything you've already earned.</p>
+          <div class="reward-picker" data-reward-picker></div>
         </fieldset>
 
         <fieldset class="field card">
           <legend class="field-label">Check-in reminders</legend>
           <label class="switch">
-            <input type="checkbox" name="remindersOn" />
+            <input type="checkbox" name="remindersOn" role="switch" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span>Gentle nudges at the times you usually slip</span>
           </label>
           <div id="reminder-list" class="stack stack--tight"></div>
